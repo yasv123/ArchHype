@@ -99,7 +99,10 @@ def main():
 
     project.verbose = True
 
-    while True:
+    count = 0
+
+    while count < 1:
+        count += 1
         print('=' * 72)
         print('Watching for files to change')
         changed_paths = looping_wait_on(paths)
