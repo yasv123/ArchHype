@@ -1,0 +1,9 @@
+`t: Chapter 3: The Ending: but what's this a twist?`
+`b: chapa.txt`
+`b: chapb.txt`
+Holy crap, there are table of contents within table of contents.
+What do we even do now.
+This is too much.
+At least there are no circular dependencies.
+...
+Don't get any ideas
