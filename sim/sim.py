@@ -11,6 +11,7 @@ class AccessType(Enum):
 
 def memaccess(ip, AccessType, addr, size, mem_at):
 	print(str(size) + " byte " + str(AccessType.value) + " at 0x{:x}".format(addr))
+	# fill out simulation here using size, AccessType and addr
 
 with open(args.filepath) as f:
 	line = f.readline()
