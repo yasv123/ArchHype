@@ -6,42 +6,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument("filepath", help="Filepath to PIN log file.")
 args = parser.parse_args()
 
-mainmem = classes.Memory()
+cache = classes.Hierarchy([ (0, 0, 0) ])
 
 class AccessType(Enum):
     READ = "R"
     WRITE = "W"
 
-mismatch = {'g': 0, 'f': 0, 'l': 0}
-unmatch = {'g': 0, 'f': 0, 'l': 0}
-
-def memaccess(ip, access_type, addr, size, mem_at, line):
-    global mismatch
-    global unmatch
-    # print(str(size) + " byte " + str(AccessType.value) + " at "+str(addr))
-    # fill out simulation here using size, AccessType and addr
-    if access_type is AccessType.READ:
-        read, un = mainmem.read(addr, size)
-        if un:
-            unmatch['g'] += 1
-        elif read != mem_at:
-#            print(line, 'ip ', hex(ip), access_type, 'addr', hex(addr), size, 'memat', hex(mem_at), 'read', hex(read))
-#            exit(1)
-            mismatch['g'] += 1
-#        if read != mem_at and not un:
-#            mismatch['g'] += 1
-#            if line < 37000:
-#                mismatch['f'] += 1
-#            else:
-#                mismatch['l'] += 1
-#        elif read != mem_at and un:
-#            unmatch['g'] += 1
-#            if line < 37000:
-#                unmatch['f'] += 1
-#            else:
-#                unmatch['l'] += 1
-    else:
-        mainmem.write(addr, size, mem_at, line)
+def memaccess(ip, is_read, addr, size, mem_at, line):
+    if is_read:
+        cache.read(addr, size)
+     else:
+        cache.write(addr, size)
 
 with open(args.filepath) as f:
     line = f.readline()
@@ -50,12 +25,11 @@ with open(args.filepath) as f:
         if "#" not in line:
             comps = line.split()
             ip = int(comps[0][:-1], 16)
-            access_type = AccessType(comps[1])
+            is_read = comps[1] == "R"
             addr = int(comps[2], 16)
             size = int(comps[3])
             mem_at = int(comps[4], 16)
-            memaccess(ip, access_type, addr, size, mem_at, linenum)
+            memaccess(ip, is_read, addr, size, mem_at, linenum)
         line = f.readline()
         linenum += 1
-
-print("mismatch: ", mismatch, ", unmatch: ", unmatch)
+    print(cache.getMetrics())
