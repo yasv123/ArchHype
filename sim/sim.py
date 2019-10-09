@@ -22,21 +22,26 @@ def memaccess(ip, access_type, addr, size, mem_at, line):
     # fill out simulation here using size, AccessType and addr
     if access_type is AccessType.READ:
         read, un = mainmem.read(addr, size)
-        if read != mem_at and not un:
-            mismatch['g'] += 1
-            if line < 37000:
-                mismatch['f'] += 1
-            else:
-                mismatch['l'] += 1
-        elif read != mem_at and un:
-            print('actual', mem_at, 'simulated', read)
+        if un:
             unmatch['g'] += 1
-            if line < 37000:
-                unmatch['f'] += 1
-            else:
-                unmatch['l'] += 1
+        elif read != mem_at:
+#            print(line, 'ip ', hex(ip), access_type, 'addr', hex(addr), size, 'memat', hex(mem_at), 'read', hex(read))
+#            exit(1)
+            mismatch['g'] += 1
+#        if read != mem_at and not un:
+#            mismatch['g'] += 1
+#            if line < 37000:
+#                mismatch['f'] += 1
+#            else:
+#                mismatch['l'] += 1
+#        elif read != mem_at and un:
+#            unmatch['g'] += 1
+#            if line < 37000:
+#                unmatch['f'] += 1
+#            else:
+#                unmatch['l'] += 1
     else:
-        mainmem.write(addr, size, mem_at)
+        mainmem.write(addr, size, mem_at, line)
 
 with open(args.filepath) as f:
     line = f.readline()
@@ -52,4 +57,5 @@ with open(args.filepath) as f:
             memaccess(ip, access_type, addr, size, mem_at, linenum)
         line = f.readline()
         linenum += 1
-print(mismatch, unmatch)
+
+print("mismatch: ", mismatch, ", unmatch: ", unmatch)
