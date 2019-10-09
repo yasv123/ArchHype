@@ -6,16 +6,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("filepath", help="Filepath to PIN log file.")
 args = parser.parse_args()
 
-cache = classes.Hierarchy([ (0, 0, 0) ])
-
-class AccessType(Enum):
-    READ = "R"
-    WRITE = "W"
+cache = classes.Memory([ (1, 8, 256), (2, 16, 512) ])
 
 def memaccess(ip, is_read, addr, size, mem_at, line):
     if is_read:
         cache.read(addr, size)
-     else:
+    else:
         cache.write(addr, size)
 
 with open(args.filepath) as f:
@@ -32,4 +28,6 @@ with open(args.filepath) as f:
             memaccess(ip, is_read, addr, size, mem_at, linenum)
         line = f.readline()
         linenum += 1
-    print(cache.getMetrics())
+
+cache.printMetrics()
+
