@@ -1,6 +1,9 @@
 from collections import defaultdict
 import math
 import random
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4)
 
 class Address:
     def __init__(self, address):
@@ -52,7 +55,7 @@ class Cache:
         self.offsetbits = int(math.log2(self.blocksize))
         self.indexbits = int(math.log2(self.sets))
 
-        self.cache = [defaultdict(bool) for i in range(self.sets)]
+        self.cache = [ [ (0, False, False) for j in range(self.ways) ] for i in range(self.sets)]
 
     def getOffset(self, addr):
         return addr & (self.blocksize - 1)
@@ -64,26 +67,46 @@ class Cache:
         return addr >> (self.offsetbits + self.indexbits)
 
     def read(self, addr):
-        hit = self.cache[self.getIndex(addr)][self.getTag(addr)]
+        ways = self.cache[self.getIndex(addr)]
+        taglist = list(filter(lambda item: item[0] == self.getTag(addr) and item[1] == True, ways))
+        assert len(taglist) <= 1, "More than one instance of same tag in set"
+        block = taglist[0] if len(taglist) == 1 else (0, False, False)
+        hit = block[1]
         if not hit:
             self.load(addr)
+        self.use(addr)
         return hit
 
     def write(self, addr):
-        hit = self.cache[self.getIndex(addr)][self.getTag(addr)]
-        if not hit and self.allocate:
-            self.load(addr)
-        return hit
+        return read(addr)
+        """
+        TODO: DO THIS
+        """
 
     def load(self, addr):
-        s = self.cache[self.getIndex(addr)]
-        if len(s) == self.ways:
+        ways = self.cache[self.getIndex(addr)]
+        # unused = list(filter(lambda item: ways[item][2] == False, range(self.ways)))
+        numused = len(list(filter(lambda item: item[1], ways)))
+        if numused == self.ways:
             # evict logic
-            evict = random.sample(list(s), 1)[0]
-            s[evict] = False
-            s.pop(evict)
+            indices = list(filter(lambda item: ways[item][2] == False, range(self.ways)))
+            evict = random.sample(indices, 1)[0]
+            ways[evict] = (self.getTag(addr), True, True)
+        else:
+            unused = list(filter(lambda item: ways[item][1] == False, range(self.ways)))[0]
+            ways[unused] = (self.getTag(addr), True, True)
 
-        s[self.getTag(addr)] = True
+
+    def use(self, addr):
+        ways = self.cache[self.getIndex(addr)]
+        blockindex = list(filter(lambda item: ways[item][0] == self.getTag(addr) and ways[item][1] == True, range(self.ways)))[0]
+        ways[blockindex] = (self.getTag(addr), True, True)
+        lrucount = len(list(filter(lambda item: item[1] == True and item[2] == True, ways)))
+        if lrucount == self.ways:
+            for index in range(self.ways):
+                if not index == blockindex:
+                    ways[index] = (ways[index][0], True, False)
+
 
 
 class Memory:
