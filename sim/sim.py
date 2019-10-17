@@ -69,5 +69,5 @@ with open(args.filepath) as f:
         linenum += 1
 
 # make sure to always print final window size, should always be at least 1
-print('final window size', len(window))
+print('final window', linenum - window_size, len(window))
 cache.printMetrics()
